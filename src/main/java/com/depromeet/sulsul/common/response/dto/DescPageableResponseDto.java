@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PageableResponseDto<T> implements Serializable {
+public class DescPageableResponseDto<T> implements Serializable {
 
   private boolean success;
   private Long resultCount;
@@ -22,18 +22,17 @@ public class PageableResponseDto<T> implements Serializable {
   private Long nextCursor;
   private ErrorResponseDto error;
 
-
-  private PageableResponseDto(ErrorResponseDto errorResponseDto) {
+  private DescPageableResponseDto(ErrorResponseDto errorResponseDto) {
     this.error = errorResponseDto;
   }
 
-  private PageableResponseDto(List<T> contents, Long nextCursor, int paginationSize) {
+  private DescPageableResponseDto(List<T> contents, Long nextCursor, int paginationSize) {
     paginate(contents, nextCursor, paginationSize);
     this.contents = contents;
     this.success = true;
   }
 
-  private PageableResponseDto(long resultCount, List<T> contents, Long nextCursor, int paginationSize) {
+  private DescPageableResponseDto(long resultCount, List<T> contents, Long nextCursor, int paginationSize) {
     paginate(contents, nextCursor, paginationSize);
     this.resultCount = resultCount;
     this.contents = contents;
@@ -50,31 +49,33 @@ public class PageableResponseDto<T> implements Serializable {
 
   private void setCursor(Long cursor, int paginationSize) {
     if (cursor == null) {
-      this.nextCursor = Integer.toUnsignedLong(paginationSize);
+      this.nextCursor = null;
       return;
     }
-    this.nextCursor = cursor + paginationSize;
+    this.nextCursor = (cursor-paginationSize > 0 ) ? cursor-paginationSize : 0;
   }
 
   private boolean isOverPaginationSize(List<T> contents, int size) {
     return contents.size() > size;
   }
 
-  public static <T> PageableResponseDto<T> of(List<T> contents, Long nextCursor,
+  public static <T> DescPageableResponseDto<T> of(List<T> contents, Long nextCursor,
       int paginationSize) {
-    return new PageableResponseDto<>(contents, nextCursor, paginationSize);
+    return new DescPageableResponseDto<T>(contents, nextCursor, paginationSize);
   }
 
-  public static <T> PageableResponseDto<T> of(long resultCount, List<T> contents, Long nextCursor,
+  public static <T> DescPageableResponseDto<T> of(long resultCount, List<T> contents, Long nextCursor,
       int paginationSize) {
-    return new PageableResponseDto<>(resultCount, contents, nextCursor, paginationSize);
+    return new DescPageableResponseDto<>(resultCount, contents, nextCursor, paginationSize);
   }
 
-  public static PageableResponseDto<?> ERROR(Throwable throwable, HttpStatus status) {
-    return new PageableResponseDto(ErrorResponseDto.of(throwable, status));
+  public static DescPageableResponseDto<?> ERROR(Throwable throwable, HttpStatus status) {
+    return new DescPageableResponseDto(ErrorResponseDto.of(throwable, status));
   }
 
-  public static PageableResponseDto<?> ERROR(String errorMessage, HttpStatus status) {
-    return new PageableResponseDto(ErrorResponseDto.of(errorMessage, status));
+  public static DescPageableResponseDto<?> ERROR(String errorMessage, HttpStatus status) {
+    return new DescPageableResponseDto(ErrorResponseDto.of(errorMessage, status));
   }
 }
+
+

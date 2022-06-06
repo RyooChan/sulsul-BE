@@ -1,6 +1,7 @@
 package com.depromeet.sulsul.domain.record.controller;
 
 import com.depromeet.sulsul.common.dto.ImageDto;
+import com.depromeet.sulsul.common.response.dto.DescPageableResponseDto;
 import com.depromeet.sulsul.common.response.dto.PageableResponseDto;
 import com.depromeet.sulsul.common.response.dto.ResponseDto;
 import com.depromeet.sulsul.domain.record.dto.RecordCountryAndCountResponseDto;
@@ -9,10 +10,6 @@ import com.depromeet.sulsul.domain.record.dto.RecordRequestDto;
 import com.depromeet.sulsul.domain.record.dto.RecordResponseDto;
 import com.depromeet.sulsul.domain.record.dto.RecordTicketResponseDto;
 import com.depromeet.sulsul.domain.record.dto.RecordUpdateRequestDto;
-import com.depromeet.sulsul.domain.record.entity.Record;
-import com.depromeet.sulsul.domain.record.service.RecordService;
-import com.depromeet.sulsul.domain.recordFlavor.dto.RecordFlavorRequest;
-import java.util.List;
 import com.depromeet.sulsul.domain.record.service.RecordService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/records")
 @RequiredArgsConstructor
-@Api(tags = "맥주 기록 APIs")
+@Api(tags = "기록 APIs")
 public class RecordController {
 
   private final RecordService recordService;
@@ -77,11 +74,9 @@ public class RecordController {
 
   @ApiOperation(value = "'이 맥주는 어때요' 관련 맥주 정보 조회 API")
   @PostMapping("/find")
-  public PageableResponseDto<RecordResponseDto> findAllRecordsWithPageable(
+  public DescPageableResponseDto<RecordResponseDto> findAllRecordsWithPageable(
       @RequestBody RecordFindRequestDto recordFindRequestDto) {
-    // TODO : 임시 유저아이디 사용.
-    Long memberId = 1L;
-    return recordService.findAllRecordsWithPageable(recordFindRequestDto, memberId);
+    return recordService.findAllRecordsWithPageable(recordFindRequestDto);
   }
 
 
@@ -93,7 +88,7 @@ public class RecordController {
 
   @ApiOperation(value = "기록 작성 맥주 티켓 조회 API")
   @GetMapping(value = {"/tickets/{recordId}", "/ticket"})
-  public PageableResponseDto<RecordTicketResponseDto> findAllRecordsTicketWithPageable(@PathVariable(name = "recordId", required = false) Long recordId) {
+  public DescPageableResponseDto<RecordTicketResponseDto> findAllRecordsTicketWithPageable(@PathVariable(name = "recordId", required = false) Long recordId) {
     // TODO : 임시 유저아이디 사용.
     Long memberId = 1L;
     return recordService.findAllRecordsTicketWithPageable(recordId, memberId);

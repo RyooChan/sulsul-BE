@@ -11,11 +11,11 @@ import org.springframework.stereotype.Repository;
 
 public interface RecordRepositoryCustom {
 
-  List<Record> findAllRecordsWithPageable(RecordFindRequestDto recordFindRequestDto, Long memberId);
+  List<Record> findAllRecordsWithPageable(RecordFindRequestDto recordFindRequestDto);
 
   Long findRecordCountByMemberId(Long id);
 
-  List<RecordTicketResponseDto> findAllRecordsTicketWithPageable(Long beerId, Long memberId);
+  List<RecordTicketResponseDto> findAllRecordsTicketWithPageable(Long recordId, Long memberId);
 
   RecordCountryAndCountResponseDto findRecordCountryAndCountResponseDto(Long memberId);
 
@@ -24,4 +24,6 @@ public interface RecordRepositoryCustom {
   Record findLastSavedCountryName();
 
   Long selectCount();
+
+  Long findRecordCountByBeerId(Long beerId);
 }

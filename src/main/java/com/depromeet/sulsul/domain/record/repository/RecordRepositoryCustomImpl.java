@@ -23,14 +23,14 @@ public class RecordRepositoryCustomImpl implements RecordRepositoryCustom {
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<Record> findAllRecordsWithPageable(RecordFindRequestDto recordFindRequestDto, Long memberId) {
+  public List<Record> findAllRecordsWithPageable(RecordFindRequestDto recordFindRequestDto) {
     return queryFactory.select(record)
         .from(record)
         .where(beerIdEq(recordFindRequestDto.getBeerId())
-            , memberIdEq(memberId)
-            , recordIdGoe(recordFindRequestDto.getRecordId())
+            , recordIdLoe(recordFindRequestDto.getRecordId())
             , record.deletedAt.isNull()
         )
+        .orderBy(record.createdAt.desc())
         .limit(PaginationUtil.PAGINATION_SIZE + 1)
         .fetch();
   }
@@ -80,9 +80,10 @@ public class RecordRepositoryCustomImpl implements RecordRepositoryCustom {
         )).from(record)
         .where(
             memberIdEq(memberId)
-            , recordIdGoe(recordId)
+            , recordIdLoe(recordId)
             , record.deletedAt.isNull()
         )
+        .orderBy(record.createdAt.desc())
         .limit(PaginationUtil.PAGINATION_SIZE + 1)
         .fetch();
   }
@@ -102,6 +103,14 @@ public class RecordRepositoryCustomImpl implements RecordRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public Long findRecordCountByBeerId(Long beerId){
+    return queryFactory.selectFrom(record)
+        .where(beerIdEq(beerId)
+              , record.deletedAt.isNull()
+        ).stream().count();
+  }
+
   private BooleanExpression beerIdEq(Long beerId) {
     return beerId != null ? record.beer.id.eq(beerId) : null;
   }
@@ -110,8 +119,8 @@ public class RecordRepositoryCustomImpl implements RecordRepositoryCustom {
     return memberId != null ? record.member.id.eq(memberId) : null;
   }
 
-  private BooleanExpression recordIdGoe(Long recordId) {
-    return recordId != null ? record.id.goe(recordId) : null;
+  private BooleanExpression recordIdLoe(Long recordId) {
+    return recordId != null ? record.id.loe(recordId) : null;
   }
 
 }

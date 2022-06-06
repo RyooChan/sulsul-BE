@@ -10,6 +10,7 @@ import com.depromeet.sulsul.common.error.exception.custom.FlavorNotFoundExceptio
 import com.depromeet.sulsul.common.error.exception.custom.MemberNotFoundException;
 import com.depromeet.sulsul.common.error.exception.custom.RecordNotFoundException;
 import com.depromeet.sulsul.common.external.AwsS3ImageClient;
+import com.depromeet.sulsul.common.response.dto.DescPageableResponseDto;
 import com.depromeet.sulsul.common.response.dto.PageableResponseDto;
 import com.depromeet.sulsul.domain.beer.dto.BeerResponseDto;
 import com.depromeet.sulsul.domain.beer.entity.Beer;
@@ -137,10 +138,10 @@ public class RecordService {
   }
 
   @Transactional(readOnly = true)
-  public PageableResponseDto<RecordResponseDto> findAllRecordsWithPageable(
-      RecordFindRequestDto recordFindRequestDto, Long memberId) {
+  public DescPageableResponseDto<RecordResponseDto> findAllRecordsWithPageable(
+      RecordFindRequestDto recordFindRequestDto) {
     List<Record> allRecordWithPageable = recordRepository.findAllRecordsWithPageable(
-        recordFindRequestDto, memberId);
+        recordFindRequestDto);
     List<RecordResponseDto> allRecordDtosWithPageableResponse = new ArrayList<>();
 
     for (Record record : allRecordWithPageable) {
@@ -154,10 +155,22 @@ public class RecordService {
           record.getMember().getName());
 
       allRecordDtosWithPageableResponse.add(
-          new RecordResponseDto(record.getContent(), memberRecordDto,
-              record.getFeel(), flavorDtos, record.getCreatedAt(), record.getUpdatedAt()));
+          new RecordResponseDto(record.getId(), record.getContent(), record.getFeel(), record.getImageUrl()
+              , memberRecordDto, record.getCreatedAt(), record.getUpdatedAt()
+              , record.getStartCountryKor(), record.getEndCountryKor()
+              , record.getStartCountryEng(), record.getEndCountryEng()
+              , flavorDtos));
     }
-    return PageableResponseDto.of(allRecordDtosWithPageableResponse, recordFindRequestDto.getRecordId(), PAGINATION_SIZE);
+
+    Long resultCount = findRecordCountByBeerId(recordFindRequestDto.getBeerId());
+    Long cursor = allRecordDtosWithPageableResponse.isEmpty() ? null : allRecordDtosWithPageableResponse.get(0).getId();
+    return DescPageableResponseDto.of(resultCount, allRecordDtosWithPageableResponse
+        , cursor, PAGINATION_SIZE);
+  }
+
+  @Transactional(readOnly = true)
+  public Long findRecordCountByBeerId(Long beerId){
+    return recordRepository.findRecordCountByBeerId(beerId);
   }
 
   // Todo : 로그인 구현 이후 유저 validation 로직 추가 예정
@@ -173,14 +186,20 @@ public class RecordService {
   }
 
   @Transactional(readOnly = true)
-  public PageableResponseDto<RecordTicketResponseDto> findAllRecordsTicketWithPageable(Long recordId, Long memberId){
+  public DescPageableResponseDto<RecordTicketResponseDto> findAllRecordsTicketWithPageable(Long recordId, Long memberId){
     List<RecordTicketResponseDto> allRecordsTicketWithPageable = recordRepository.findAllRecordsTicketWithPageable(recordId, memberId);
-    return PageableResponseDto.of(allRecordsTicketWithPageable, recordId, PAGINATION_SIZE);
+
+    // TODO : count적용
+    Long resultCount = findRecordCountByMemberId(memberId);
+
+    Long cursor = allRecordsTicketWithPageable.isEmpty() ? null : allRecordsTicketWithPageable.get(0).getRecordId();
+    return DescPageableResponseDto.of(resultCount, allRecordsTicketWithPageable, cursor, PAGINATION_SIZE);
   }
 
   @Transactional(readOnly = true)
   public RecordCountryAndCountResponseDto findCountryAndCountByMemberId(Long memberId){
     return recordRepository.findRecordCountryAndCountResponseDto(memberId);
   }
+
 
 }
